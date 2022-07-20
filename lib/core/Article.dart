@@ -7,6 +7,7 @@ class Article {
   final String source;
   final String feedSourceImgLink;
   final String imageURL;
+  final String category;
 
   const Article(
       {required this.id,
@@ -17,6 +18,7 @@ class Article {
       required this.source,
       required this.feedSourceImgLink,
       required this.imageURL,
+      required this.category
       });
 
   factory Article.fromJson(Map<String, dynamic> json) {
@@ -28,7 +30,9 @@ class Article {
         link: json['link'] as String,
         source: json['source'] as String,
         feedSourceImgLink: json['feedSourceImgLink']==null? "": json['feedSourceImgLink']  as String,
-        imageURL: json['imageURL']==null? "": json['imageURL']  as String);
+        imageURL: json['imageURL']==null? "": json['imageURL']  as String,
+        category: json['category'] as String);
+        
         
   }
 }

@@ -1,5 +1,5 @@
 name: topcontent
-description: A new Flutter project.
+description: A platform that provides you the latest curated content including everyday news and trending media posts. View the lastest news on entertinment, sports, technology, business and gaming.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -37,6 +37,11 @@ dependencies:
   http: ^0.13.4
   image_network: ^2.5.1
   firebase_analytics: ^9.1.12
+  infinite_scroll_pagination: ^3.2.0
+  seo_renderer: ^0.6.0
+  cached_network_image: ^3.2.1
+  go_router: ^4.1.1
+ 
 
 dev_dependencies:
   flutter_test:

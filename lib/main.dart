@@ -1,88 +1,80 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:seo_renderer/helpers/renderer_state.dart';
+import 'package:seo_renderer/helpers/robot_detector_vm.dart';
+import 'package:seo_renderer/renderers/text_renderer/text_renderer_style.dart';
+import 'package:seo_renderer/renderers/text_renderer/text_renderer_vm.dart';
 import 'package:topcontent/config/DefaultFirebaseConfig.dart';
 import 'package:topcontent/core/Article.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:topcontent/widgets/ArticlesList.dart';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:topcontent/core/ArticleTabBarView.dart';
+import 'package:topcontent/widgets/PaginatedArticleGrid.dart';
 
-Future<List<Article>> fetchArticles(http.Client client) async {
-  final response = await client.get(
-      Uri.https("api-dot-topcontent-355516.nn.r.appspot.com", "/articles"));
+import 'core/ErrorScreen.dart';
+import 'core/HomePageView.dart';
+import 'package:topcontent/util/Utilities.dart';
 
-  // Use the compute function to run parsePhotos in a separate isolate.
-  return compute(parseArticles, Utf8Decoder().convert(response.bodyBytes));
-}
 
-List<Article> parseArticles(String responseBody) {
-  final parsed = jsonDecode(responseBody).cast<Map<String, dynamic>>();
-
-  return parsed.map<Article>((json) => Article.fromJson(json)).toList();
-}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseConfig.platformOptions);
-  runApp(const TopContent());
+  GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
+  runApp( TopContent());
 }
 
 class TopContent extends StatelessWidget {
-  const TopContent({super.key});
+   TopContent({super.key});
 
   static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
   static FirebaseAnalyticsObserver observer =
       FirebaseAnalyticsObserver(analytics: analytics);
 
+  static const appTitle = 'TopContent';
   @override
-  Widget build(BuildContext context) {
-    const appTitle = 'TopContent';
+  Widget build(BuildContext context) => MaterialApp.router(routeInformationParser: _router.routeInformationParser, routerDelegate: _router.routerDelegate, title: appTitle, routeInformationProvider: _router.routeInformationProvider,);
 
-    return MaterialApp(
+  final _router = GoRouter(
+    initialLocation: '/',
+    routes: [
+      
+      GoRoute(
+        name:"home",
+        path: '/',
+        redirect: (_)=>'/category/${ArticleCategory.values[0].name}',
+        //builder: (context, state) =>  HomePageView(title: appTitle, analytics: analytics, observer: observer),
+      ),
+      GoRoute(
+      name:"category",
+      path: "/category/:categoryId",
+      builder: (context, state) {
+        final categoryId = state.params['categoryId']!;
+        return ArticleTabBarView(key: state.pageKey, category: ArticleCategory.values.firstWhere((element) => categoryId==element.name), analytics: analytics, observer: observer,);
+      },
+       )
+     
+    ],
+    errorBuilder: (context, state) => ErrorScreen(state.error!),
+  );
+    
+
+
+    /*return MaterialApp(
+      theme: ThemeData(fontFamily: "Tahoma"),
       title: appTitle,
-      navigatorObservers: <NavigatorObserver>[observer],
-      home: HomePage(title: appTitle, analytics: analytics, observer: observer),
-    );
-  }
+      navigatorObservers: <NavigatorObserver>[observer, seoRouteObserver],
+      home: HomePageView(
+          title: appTitle,
+          analytics: analytics,
+          observer: observer,
+          seoRouteObserver: seoRouteObserver),
+    );*/
+  
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage(
-      {super.key,
-      required this.title,
-      required this.analytics,
-      required this.observer});
-
-  final String title;
-  final FirebaseAnalytics analytics;
-  final FirebaseAnalyticsObserver observer;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: FutureBuilder<List<Article>>(
-        future: fetchArticles(http.Client()),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            log(snapshot.error.toString());
-            return const Center(
-              child: Text('An error has occurred!'),
-            );
-          } else if (snapshot.hasData) {
-            return ArticlesList(articles: snapshot.data!);
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        },
-      ),
-    );
-  }
-}
