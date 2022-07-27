@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -13,11 +14,11 @@ import 'package:flutter/foundation.dart';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:topcontent/core/ArticleTabBarView.dart';
+import 'package:topcontent/widgets/ArticleDetail.dart';
+import 'package:topcontent/widgets/ArticleTabBarView.dart';
 import 'package:topcontent/widgets/PaginatedArticleGrid.dart';
 
-import 'core/ErrorScreen.dart';
-import 'core/HomePageView.dart';
+import 'widgets/ErrorScreen.dart';
 import 'package:topcontent/util/Utilities.dart';
 
 
@@ -25,7 +26,7 @@ import 'package:topcontent/util/Utilities.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseConfig.platformOptions);
-  GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
+
   runApp( TopContent());
 }
 
@@ -41,6 +42,7 @@ class TopContent extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp.router(routeInformationParser: _router.routeInformationParser, routerDelegate: _router.routerDelegate, title: appTitle, routeInformationProvider: _router.routeInformationProvider,);
 
   final _router = GoRouter(
+    urlPathStrategy: UrlPathStrategy.path,
     initialLocation: '/',
     routes: [
       
@@ -57,7 +59,17 @@ class TopContent extends StatelessWidget {
         final categoryId = state.params['categoryId']!;
         return ArticleTabBarView(key: state.pageKey, category: ArticleCategory.values.firstWhere((element) => categoryId==element.name), analytics: analytics, observer: observer,);
       },
-       )
+       ),
+       GoRoute(
+        name: "article_detail",
+        path: "/category/:categoryId/article/:articleTitle/:articleId",
+        builder: (context, state)  {
+                  
+                 return ArticleDetail(articleId: state.params["articleId"]!);
+                  
+
+        },
+        )
      
     ],
     errorBuilder: (context, state) => ErrorScreen(state.error!),

@@ -6,7 +6,9 @@ import 'package:seo_renderer/renderers/image_renderer/image_renderer_vm.dart';
 import 'package:seo_renderer/renderers/text_renderer/text_renderer_style.dart';
 import 'package:seo_renderer/renderers/text_renderer/text_renderer_vm.dart';
 import 'package:topcontent/core/Article.dart';
-import 'dart:html' as html;
+
+import 'package:go_router/go_router.dart';
+import 'package:topcontent/util/Utilities.dart';
 
 
 
@@ -29,7 +31,8 @@ class ArticleCard extends StatelessWidget {
       child: InkWell(
         //  splashColor: Colors.blue.withAlpha(30),
           onTap: () {
-            html.window.open(articleData.link, "_blank");
+            context.goNamed("article_detail",params: {"categoryId": articleData.category, "articleTitle": makeTitleUrlFriendly(articleData.title), "articleId":articleData.id.toString()}, );
+           
           },
           child: Column(
             children: [

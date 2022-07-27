@@ -28,11 +28,28 @@ Future<List<Article>> fetchArticles(
   };
 
   final response =
-      await client.get(Uri.https("topcontent.ca", "/articles", queryParams));
+      await client.get(Uri.https("api-dot-topcontent-355516.nn.r.appspot.com", "/articles", queryParams));
 
   // Use the compute function to run parsePhotos in a separate isolate.
   return compute(
       parseArticles, const Utf8Decoder().convert(response.bodyBytes));
+}
+
+Future<Article> fetchArticle(http.Client client, String articleId) async{
+ 
+
+  final response =
+      await client.get(Uri.https("api-dot-topcontent-355516.nn.r.appspot.com", "/articles/$articleId"));
+  if (response.statusCode == 200) {
+    // If the server did return a 200 OK response,
+    // then parse the JSON.
+    return Article.fromJson(jsonDecode(const Utf8Decoder().convert(response.bodyBytes)));
+  } else {
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    throw Exception('Failed to load album');
+  }
+  
 }
 
 List<Article> parseArticles(String responseBody) {
@@ -40,3 +57,17 @@ List<Article> parseArticles(String responseBody) {
 
   return parsed.map<Article>((json) => Article.fromJson(json)).toList();
 }
+
+String makeTitleUrlFriendly(String title){
+  try{
+  String friendlyTitle=title.toLowerCase().trim();
+  friendlyTitle=friendlyTitle.replaceAll(RegExp(r'[^\w\s]+'), '');
+  friendlyTitle=friendlyTitle.replaceAll(" ", "-");
+  return friendlyTitle;
+  }
+  catch( error){
+    return title;
+  }
+  
+}
+
